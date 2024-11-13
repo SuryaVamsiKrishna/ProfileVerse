@@ -16,9 +16,13 @@ public class CandidateServiceImpl implements CandidateService {
 
     @Override
     public List<Candidate> getAllCandidates() {
-        return candidateRepository.findAll();
-    }
-
+    List<Candidate> candidates = candidateRepository.findAll();
+    // candidates.forEach(candidate -> {
+    //     byte[] githubDataJson = candidate.getGithubData();
+    //     System.out.println("GitHub Data: " + githubDataJson);
+    // });
+    return candidates;
+}
     @Override
     public Candidate getCandidateById(Long id) {
         return candidateRepository.findById(id)
@@ -49,4 +53,6 @@ public class CandidateServiceImpl implements CandidateService {
     public void deleteCandidate(Long id) {
         candidateRepository.deleteById(id);
     }
+
+
 }

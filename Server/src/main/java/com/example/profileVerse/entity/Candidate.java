@@ -6,34 +6,37 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "candidate")
 public class Candidate {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long candidateId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "batch_id")
+    @ManyToOne
+    @JoinColumn(name = "batch_id", nullable = false)
     private Batch batch;
 
     private String firstName;
     private String lastName;
     private Float yearsOfExperience;
 
-    // Store binary data as byte[]
     @Lob
+    @Column(name = "resume_data", columnDefinition = "BYTEA")
     private byte[] resumeData;
 
     @Lob
-    private String resumeText;
+    @Column(name = "resume_text", columnDefinition = "BYTEA")
+    private byte[] resumeText;
 
-    @Column(columnDefinition = "jsonb")
-    private String githubData;
+    @Lob
+    @Column(name = "github_data", columnDefinition = "BYTEA")
+    private byte[] githubData;
+
 
     private Float resumeMatchingScore;
     private Float githubMatchingScore;
     private Float finalScore;
 
-    @Column(columnDefinition = "TIMESTAMP")
-    private LocalDateTime processedAt = LocalDateTime.now();
+    private LocalDateTime processedAt;
 
     // Getters and Setters
 
@@ -85,21 +88,22 @@ public class Candidate {
         this.resumeData = resumeData;
     }
 
-    public String getResumeText() {
+    public byte[] getResumeText() {
         return resumeText;
     }
 
-    public void setResumeText(String resumeText) {
+    public void setResumeText(byte[] resumeText) {
         this.resumeText = resumeText;
     }
 
-    public String getGithubData() {
+    public byte[] getGithubData() {
         return githubData;
     }
 
-    public void setGithubData(String githubData) {
+    public void setGithubData(byte[] githubData) {
         this.githubData = githubData;
     }
+
 
     public Float getResumeMatchingScore() {
         return resumeMatchingScore;
