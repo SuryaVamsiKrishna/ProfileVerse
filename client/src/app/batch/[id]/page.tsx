@@ -18,6 +18,7 @@ const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 const Page = () => {
+  console.log("test");
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
