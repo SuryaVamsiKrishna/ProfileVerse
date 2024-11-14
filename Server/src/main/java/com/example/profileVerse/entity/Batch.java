@@ -11,19 +11,30 @@ public class Batch {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long batchId;
 
-    private String batchName;
+    private String season; // Fall, Spring, Summer, Winter
+    private int year; // Calendar year
+    private String role; // Role such as "Software Engineer", "Intern", etc.
 
-    @Column(columnDefinition = "TIMESTAMP")
+    @Column(length = 5000)
+    private String jobDescription; // Job description with a 5000 character limit
+
+    @Column(columnDefinition = "TIMESTAMP", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     // Constructors
-    public Batch() {}
+    public Batch() {
+    }
 
-    public Batch(String batchName) {
-        this.batchName = batchName;
+    public Batch(String season, int year, String role, String jobDescription) {
+        this.season = season;
+        this.year = year;
+        this.role = role;
+        this.jobDescription = jobDescription;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     // Getters and Setters
@@ -35,12 +46,36 @@ public class Batch {
         this.batchId = batchId;
     }
 
-    public String getBatchName() {
-        return batchName;
+    public String getSeason() {
+        return season;
     }
 
-    public void setBatchName(String batchName) {
-        this.batchName = batchName;
+    public void setSeason(String season) {
+        this.season = season;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getJobDescription() {
+        return jobDescription;
+    }
+
+    public void setJobDescription(String jobDescription) {
+        this.jobDescription = jobDescription;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -57,5 +92,10 @@ public class Batch {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }
