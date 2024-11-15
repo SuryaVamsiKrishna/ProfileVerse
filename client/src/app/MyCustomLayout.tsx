@@ -70,7 +70,7 @@ export default function MyCustomLayout({
           <Button
             className="w-full"
             onClick={() => {
-              navigateToPage("/batches");
+              navigateToPage("/batch");
             }}
           >
             <PlusSquareOutlined />

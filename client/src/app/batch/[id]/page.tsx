@@ -1,36 +1,67 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Layout,
   Form,
-  Input,
   Upload,
   Button,
   Typography,
   Modal,
   Progress,
   message,
+  Divider,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import axios from "axios";
+import { useParams } from "next/navigation";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
-const { TextArea } = Input;
 
-const Page = () => {
-  console.log("test");
-  const [fileList, setFileList] = useState([]);
+const ResumesUploadPage = () => {
+  const [fileList, setFileList] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedFileCount, setSelectedFileCount] = useState(0);
 
+  // Extract batch ID from the URL
+  const params = useParams();
+  const batchId = params?.id;
+
+  // Display an error if batch ID is missing
+  useEffect(() => {
+    if (!batchId) {
+      message.error("Batch ID not found in URL.");
+    }
+  }, [batchId]);
+
+  // Handle file selection
   const handleUploadChange = ({ fileList }: any) => {
     setFileList(fileList);
-    setSelectedFileCount(fileList.length); // Update selected file count
+    setSelectedFileCount(fileList.length);
   };
 
-  const handleFormSubmit = (values: any) => {
+  // Convert file to base64 string
+  const convertFileToBase64 = (file: File) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = (reader.result as string).split(",")[1]; // Extract base64 content
+        resolve(base64String);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Handle form submission
+  const handleFormSubmit = async () => {
+    if (!batchId) {
+      message.error("Batch ID is missing.");
+      return;
+    }
+
     if (!fileList.length) {
       message.error("Please upload at least one resume.");
       return;
@@ -39,89 +70,106 @@ const Page = () => {
     setIsModalVisible(true);
     setUploading(true);
 
-    // Simulate upload process (replace with actual upload logic)
-    let currentCount = 0;
-    const totalFiles = fileList.length;
+    try {
+      // Convert files to base64
+      const filesBase64 = await Promise.all(
+        fileList.map((file) => convertFileToBase64(file.originFileObj))
+      );
 
-    const interval = setInterval(() => {
-      currentCount += 1;
-      setUploadProgress(Math.round((currentCount / totalFiles) * 100));
+      // Prepare payload
+      const payload = {
+        batchId: parseInt(batchId),
+        files: filesBase64,
+      };
 
-      if (currentCount === totalFiles) {
-        clearInterval(interval);
-        setUploading(false);
-        setIsModalVisible(false);
-        setFileList([]); // Clear file list after upload
-        setSelectedFileCount(0); // Reset file count after upload
-        message.success("All resumes uploaded successfully!");
-      }
-    }, 1000); // Simulate each file upload taking 1 second
+      // Make the POST request
+      const response = await axios.post(
+        "http://localhost:8080/api/resumes/upload",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress(percentCompleted);
+          },
+        }
+      );
+
+      // Handle successful upload
+      setUploading(false);
+      setIsModalVisible(false);
+      setFileList([]);
+      setSelectedFileCount(0);
+      setUploadProgress(0);
+
+      message.success("Resumes uploaded successfully!");
+      console.log(response.data);
+    } catch (error) {
+      console.error("Upload error:", error);
+      message.error("Failed to upload resumes. Please try again.");
+      setUploading(false);
+      setIsModalVisible(false);
+    }
   };
 
   return (
-    <Layout style={{ minHeight: "100vh", padding: "20px" }}>
+    <Layout style={{ minHeight: "100vh", padding: "40px" }}>
       <Content>
-        <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
-          <Title level={2}>Upload Resumes for Job Posting</Title>
-          <Text type="secondary">
-            Enter the job description and upload resumes in bulk for analysis.
-          </Text>
-          <Form
-            layout="vertical"
-            onFinish={handleFormSubmit}
-            style={{ marginTop: 30 }}
+        <div
+          style={{
+            maxWidth: 800,
+            margin: "0 auto",
+            padding: "40px",
+            backgroundColor: "#f9f9f9",
+            borderRadius: "12px",
+            boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
+          }}
+        >
+          <Title level={2} style={{ textAlign: "center", marginBottom: 30 }}>
+            Upload Resumes for Batch {batchId}
+          </Title>
+          <Divider />
+          <Text
+            type="secondary"
+            style={{ textAlign: "center", display: "block", marginBottom: 20 }}
           >
-            {/* Job Description */}
-            <Form.Item
-              label="Job Description"
-              name="jobDescription"
-              rules={[
-                { required: true, message: "Please enter a job description." },
-              ]}
-            >
-              <TextArea
-                placeholder="Enter job description here..."
-                rows={5}
-                maxLength={1000}
-                showCount
-              />
-            </Form.Item>
+            Upload resumes in bulk for analysis. Supported formats: PDF, DOC,
+            DOCX.
+          </Text>
 
-            {/* Resume Upload */}
-            <Form.Item
-              label="Upload Resumes"
-              valuePropName="fileList"
-              extra="Upload multiple resumes in PDF or DOC format"
-            >
+          <Form layout="vertical" onFinish={handleFormSubmit}>
+            <Form.Item label="Upload Resumes" valuePropName="fileList">
               <Upload
                 multiple
-                fileList={[]} // Hide file list thumbnails
+                fileList={fileList}
                 onChange={handleUploadChange}
-                beforeUpload={() => false} // Prevent automatic upload
+                beforeUpload={() => false}
                 accept=".pdf,.doc,.docx"
               >
                 <Button icon={<UploadOutlined />}>Select Files</Button>
               </Upload>
-              {/* Counter for selected files */}
               <div style={{ marginTop: 10 }}>
-                <Text>
-                  {selectedFileCount} /{" "}
-                  {selectedFileCount > 1 ? selectedFileCount : 0} resumes
-                  selected
-                </Text>
+                <Text>{selectedFileCount} resumes selected</Text>
               </div>
             </Form.Item>
 
-            {/* Submit Button */}
             <Form.Item>
-              <Button type="primary" htmlType="submit" block>
-                Submit
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                disabled={!selectedFileCount}
+              >
+                Submit Resumes
               </Button>
             </Form.Item>
           </Form>
         </div>
 
-        {/* Modal for Upload Progress */}
         <Modal
           title="Uploading Resumes"
           visible={isModalVisible}
@@ -130,18 +178,10 @@ const Page = () => {
         >
           <Progress percent={uploadProgress} status="active" />
           <Text>{`Uploading ${uploadProgress}% completed`}</Text>
-          <div style={{ marginTop: 10 }}>
-            <Text type="secondary">
-              {`Estimated time left: ${(
-                (fileList.length - (uploadProgress / 100) * fileList.length) *
-                1
-              ).toFixed(0)} seconds`}
-            </Text>
-          </div>
         </Modal>
       </Content>
     </Layout>
   );
 };
 
-export default Page;
+export default ResumesUploadPage;
