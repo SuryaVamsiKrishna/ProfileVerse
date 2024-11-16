@@ -43,10 +43,7 @@ public class ResumeController {
             List<String> files = (List<String>) payload.get("files");
 
             // Upload each resume
-            files.forEach(fileBase64 -> {
-                byte[] fileBytes = Base64.getDecoder().decode(fileBase64);
-                resumeService.uploadResume(batchId, fileBytes);
-            });
+            resumeService.uploadResumes(batchId, files);
 
             return ResponseEntity.ok("Resumes uploaded successfully!");
         } catch (Exception e) {

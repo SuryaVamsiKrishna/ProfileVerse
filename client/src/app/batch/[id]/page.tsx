@@ -27,7 +27,7 @@ const ResumesUploadPage = () => {
 
   // Extract batch ID from the URL
   const params = useParams();
-  const batchId = params?.id;
+  const batchId: any = params?.id;
 
   // Display an error if batch ID is missing
   useEffect(() => {
@@ -48,7 +48,8 @@ const ResumesUploadPage = () => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => {
-        const base64String = (reader.result as string).split(",")[1]; // Extract base64 content
+        const result = reader.result as string;
+        const base64String = result.split(",")[1]; // Remove the prefix
         resolve(base64String);
       };
       reader.onerror = (error) => reject(error);
@@ -92,7 +93,7 @@ const ResumesUploadPage = () => {
           },
           onUploadProgress: (progressEvent) => {
             const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
+              (progressEvent.loaded * 100) / progressEvent.total!
             );
             setUploadProgress(percentCompleted);
           },

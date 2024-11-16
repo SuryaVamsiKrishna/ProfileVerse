@@ -7,6 +7,7 @@ import com.example.profileVerse.repository.ResumeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class ResumeServiceImpl implements ResumeService {
      */
     @Override
     public List<Resume> getResumesByBatchId(Long batchId) {
-        return resumeRepository.findByBatch_BatchId(batchId);
+        return resumeRepository.findByBatchId(batchId);
     }
 
     /**
@@ -40,9 +41,18 @@ public class ResumeServiceImpl implements ResumeService {
      */
     @Override
     public Resume uploadResume(Long batchId, byte[] fileBytes) {
+        // Fetch the batch from the database
         Batch batch = batchRepository.findById(batchId)
                 .orElseThrow(() -> new RuntimeException("Batch not found with ID: " + batchId));
-        Resume resume = new Resume(batch, fileBytes);
+
+        // Create a new Resume object with the current timestamp
+        Resume resume = new Resume();
+        resume.setBatch(batch);
+        resume.setResumeFile(fileBytes);
+        resume.setCreatedAt(LocalDateTime.now());
+        resume.setUpdatedAt(LocalDateTime.now());
+
+        // Save and return the Resume
         return resumeRepository.save(resume);
     }
 
@@ -59,11 +69,24 @@ public class ResumeServiceImpl implements ResumeService {
                 // Decode the base64 string to byte array
                 byte[] fileBytes = Base64.getDecoder().decode(fileBase64);
 
-                // Create a new Resume object and save it
-                Resume resume = new Resume(batch, fileBytes);
+                // Create a new Resume object
+                Resume resume = new Resume();
+                resume.setBatch(batch);
+                resume.setCreatedAt(LocalDateTime.now());
+                resume.setResumeFile(fileBytes);
+                resume.setUpdatedAt(LocalDateTime.now());
+                System.out.println("resume: " + resume.getResumeFile());
+                // Debug print statements
+                System.out.println("Resume File Type: " + (fileBytes instanceof byte[] ? "byte[]" : "Not byte[]"));
+                System.out.println("Batch ID: " + (batch != null ? batch.getBatchId() : "null"));
+
+                // Save the resume
+
                 resumeRepository.save(resume);
+                System.out.println("Resume saved successfully");
 
             } catch (IllegalArgumentException e) {
+                System.err.println("Error decoding base64 file: " + e.getMessage());
                 throw new RuntimeException("Invalid base64 file data provided", e);
             }
         });
