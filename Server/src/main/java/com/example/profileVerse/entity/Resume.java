@@ -11,29 +11,21 @@ public class Resume {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long resumeId;
 
-    // Many resumes can belong to one batch
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "batch_id", nullable = false)
-    private Batch batch;
+    @Column(name = "batch_id", nullable = false)
+    private Long batchId;
 
     @Lob
-    @Column(name = "resume_file", columnDefinition = "BYTEA")
-    private byte[] resumeFile;
+    @Column(name = "resume_text")
+    private String resumeText;
 
-    @Column(columnDefinition = "TIMESTAMP")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "resume_github_link")
+    private String resumeGitHubLink;
 
-    @Column(columnDefinition = "TIMESTAMP")
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP")
+    private LocalDateTime createdAt;
 
-    // Constructors
-    public Resume() {
-    }
-
-    public Resume(Batch batch, byte[] resumeFile) {
-        this.batch = batch;
-        this.resumeFile = resumeFile;
-    }
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMP")
+    private LocalDateTime updatedAt;
 
     // Getters and Setters
     public Long getResumeId() {
@@ -44,20 +36,20 @@ public class Resume {
         this.resumeId = resumeId;
     }
 
-    public Batch getBatch() {
-        return batch;
+    public Long getBatchId() {
+        return batchId;
     }
 
-    public void setBatch(Batch batch) {
-        this.batch = batch;
+    public void setBatchId(Long batchId) {
+        this.batchId = batchId;
     }
 
-    public byte[] getResumeFile() {
-        return resumeFile;
+    public String getResumeText() {
+        return resumeText;
     }
 
-    public void setResumeFile(byte[] resumeFile) {
-        this.resumeFile = resumeFile;
+    public void setResumeText(String resumeText) {
+        this.resumeText = resumeText;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -74,5 +66,13 @@ public class Resume {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getResumeGitHubLink() {
+        return resumeGitHubLink;
+    }
+
+    public void setResumeGitHubLink(String resumeGitHubLink) {
+        this.resumeGitHubLink = resumeGitHubLink;
     }
 }

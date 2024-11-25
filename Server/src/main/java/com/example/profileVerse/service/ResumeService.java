@@ -10,11 +10,8 @@ public interface ResumeService {
 
     List<Resume> getResumesByBatchId(Long batchId);
 
-    // Upload a single resume with byte array
-    Resume uploadResume(Long batchId, byte[] fileBytes);
-
-    // Upload multiple resumes as base64 strings
-    void uploadResumes(Long batchId, List<String> base64Files);
+    // Update to use MultipartFile for file upload
+    void uploadResumes(Long batchId, List<MultipartFile> files);
 
     void deleteResume(Long resumeId);
 }

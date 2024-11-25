@@ -11,6 +11,29 @@ import java.util.List;
 @Repository
 public interface ResumeRepository extends JpaRepository<Resume, Long> {
 
-    @Query("SELECT r FROM Resume r WHERE r.batch.batchId = :batchId")
+    /**
+     * Fetch all resumes associated with a given batch ID.
+     *
+     * @param batchId the ID of the batch
+     * @return List of resumes belonging to the batch
+     */
+    @Query("SELECT r FROM Resume r WHERE r.batchId = :batchId")
     List<Resume> findByBatchId(@Param("batchId") Long batchId);
+
+    /**
+     * Fetch all resume text content for analysis.
+     *
+     * @return List of resume text content strings
+     */
+    @Query("SELECT r.resumeText FROM Resume r")
+    List<String> findAllResumeTexts();
+
+    /**
+     * Fetch resume text content by batch ID for specific batch analysis.
+     *
+     * @param batchId the ID of the batch
+     * @return List of resume text content strings for the batch
+     */
+    @Query("SELECT r.resumeText FROM Resume r WHERE r.batchId = :batchId")
+    List<String> findResumeTextsByBatchId(@Param("batchId") Long batchId);
 }
